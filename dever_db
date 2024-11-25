@@ -122,16 +122,24 @@ DELIMITER ;
 /* CRIAÇÃO DE TRIGGER */
 
 DELIMITER //
-create trigger verificaçãoEstoque
-after update on Produto
-for each row
-begin
-	if NEW.Quantidade < 10 then
-		insert into AlertaEstoque (produto_id, mensagem)
-		values (NEW.id_Produto, CONCAT('Estoque baixo para o produto ', NEW.Nome, ': ', NEW.Quantidade, ' unidades restantes.'));
-	end if;
-    
-end //
+
+CREATE TRIGGER gerar_alerta_estoque
+AFTER UPDATE ON Produto
+FOR EACH ROW
+BEGIN
+    -- Verifica se o estoque está abaixo de um limite mínimo
+    IF NEW.quantidade < 10 THEN
+        INSERT INTO AlertaEstoque (produto_id, mensagem) 
+        VALUES (NEW.id_produto, CONCAT('Estoque baixo: ', NEW.quantidade, ' unidades disponíveis.'));
+    END IF;
+
+    -- Verifica se o estoque excede um limite máximo (opcional)
+    IF NEW.quantidade > 100 THEN
+        INSERT INTO AlertaEstoque (produto_id, mensagem) 
+        VALUES (NEW.id_produto, 'Estoque alto: Verifique a capacidade de armazenamento.');
+    END IF;
+END//
+
 DELIMITER ;
 
 
@@ -177,4 +185,3 @@ select * from produto;
 
 insert into categoria(Nome,descricao)
 values("madeira","muito dura");
-
